@@ -5,6 +5,8 @@ import SentimentBadge from "@/components/ui/SentimentBadge";
 import EmptyState from "@/components/ui/EmptyState";
 import { formatDateShort } from "@/lib/utils";
 import type { Complaint } from "@prisma/client";
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { useRouter } from "next/navigation";
 
 interface Props {
   initialComplaints: Complaint[];
@@ -20,11 +22,29 @@ export default function CitizenDashboard({ initialComplaints, userEmail }: Props
   const progress = initialComplaints.filter(c => c.status === "IN_PROGRESS").length;
   const resolved = initialComplaints.filter(c => c.status === "RESOLVED").length;
 
+  const supabase = createSupabaseBrowserClient();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
   return (
-    <div className="max-w-2xl px-10 py-8">
-      {/* Greeting */}
-      <h1 className="text-xl font-semibold text-slate-900 mb-1">Good morning, {name}</h1>
-      <p className="text-sm text-slate-500 mb-8">Here&apos;s an overview of your civic activity.</p>
+    <div className="max-w-2xl px-10 py-8 relative">
+      {/* Header with Greeting & Logout */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900 mb-1">Good morning, {name}</h1>
+          <p className="text-sm text-slate-500">Here&apos;s an overview of your civic activity.</p>
+        </div>
+        <button 
+          onClick={handleSignOut}
+          className="text-xs font-medium text-slate-500 hover:text-slate-800 bg-white border border-slate-200 px-3 py-1.5 rounded-md shadow-sm transition-colors"
+        >
+          Sign Out
+        </button>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3 mb-8">
